@@ -15,8 +15,33 @@ def set_up_connection() -> connector.MySQLConnection:
         )
         logging.error("Succesfully set up the connection")
     except connector.Error as e:
-        logging.error("Problem with set up the connection")
+        logging.error(f"Problem with set up the connection: {e}")
     return cnx
 
 
-set_up_connection()
+def create_virtual_table():
+    cnx = set_up_connection()
+    try:
+        cursor = cnx.cursor()
+        sql_use_db = """
+            USE littlelemondb;
+        """
+        cursor.execute(sql_use_db)
+        sql_virtual_table = """
+            CREATE VIEW OrdersView AS
+            SELECT o.OrderID, o.TotalCost, SUM(od.Quantity) AS TotalQuantity
+            FROM OrderDetails as od
+            INNER JOIN `Order` as o
+            ON o.OrderID = od.Order_OrderID
+            GROUP BY o.OrderID, o.TotalCost;
+        """
+        cursor.execute(sql_virtual_table)
+        cnx.commit()
+        cursor.close()
+        logging.error("Succesfully created the virtual table")
+    except connector.Error as e:
+        logging.error(f"Problem with create the virtual table: {e}")
+    cnx.close()
+
+
+create_virtual_table()
