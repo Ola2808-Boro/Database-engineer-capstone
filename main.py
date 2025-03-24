@@ -170,7 +170,7 @@ def max_quantity_stored_procedure():
         results=next(cursor.stored_results())
         dataset=results.fetchall()[0][0]
         logging.info(f'Max quantity : {dataset}')
-        
+        cursor.close()
     except connector.Error as e:
         logging.error(f"Problem with creating GetMaxQuantity stored procedure: {e}")
 
@@ -194,7 +194,7 @@ def cancel_order_stored_procedure():
         cursor.execute(sql_get_order_detail)
         cursor.callproc('CancelOrder',(5,))
         logging.info("Succesfully deleted row")
-          
+        cursor.close()
     except connector.Error as e:
         logging.error(f"Problem with creating Cancel Order stored procedure: {e}")
 
@@ -214,8 +214,9 @@ def order_detail_parametrized_query():
             FROM `Order`
             WHERE OrderID = %s;
         """
-        cursor.execute(sql_get_order_detail,(5,))
+        cursor.execute(sql_get_order_detail,(5))
         result = cursor.fetchall()
+        cursor.close()
         for row in result:
             order_id,order_date,total_cost=row
             logging.info(f"Order id: {order_id}")
@@ -227,5 +228,120 @@ def order_detail_parametrized_query():
 
     finally:
         cnx.close()
+      
+def insert_data_to_staff_table():
+    staff_data=[
+        (1,'Manager','6500.00'),
+        (2,'Waiter','4500.00'),
+        (3,'Cook','6000.00'),
+        (4,'Cook','6000.00'),
+        (5,'Waiter','5500.00'),
+    ]
+    sql_insert="""
+        INSERT INTO Staff(StaffID,Role,Salary)
+        VALUES(%s,%s,%s)
+    """
+    cnx=set_up_connection()
+    try:
+        cursor=cnx.cursor()
+        sql_use_db = """
+            USE littlelemondb;
+        """
+        cursor.execute(sql_use_db)
+        cursor.executemany(sql_insert,staff_data)
+        cnx.commit()
+        cursor.close()
+        logging.info("Succesfully inserted data")
+    except connector.Error as e:
+        logging.error(f"Problem with insert data: {e}")
+    finally:
+        cnx.close()
         
-cancel_order_stored_procedure()
+def insert_data_to_order_delivery_table():
+    order_delivery_data=[
+        (1,'in preparation','2022-10-10'),
+        (2,'ready','2022-10-10'),
+        (3,'ready','2022-10-10'),
+        (4,'in preparation','2022-10-10'),
+
+    ]
+    sql_insert="""
+        INSERT INTO OrderDelivery(OrderDeliveryID,OrderDeliveryStatus,OrderDeliveryDate)
+        VALUES(%s,%s,%s)
+    """
+    cnx=set_up_connection()
+    try:
+        cursor=cnx.cursor()
+        sql_use_db = """
+            USE littlelemondb;
+        """
+        cursor.execute(sql_use_db)
+        cursor.executemany(sql_insert,order_delivery_data)
+        cnx.commit()
+        cursor.close()
+        logging.info("Succesfully inserted data")
+    except connector.Error as e:
+        logging.error(f"Problem with insert data: {e}")
+    finally:
+        cnx.close()
+        
+def insert_data_to_customer_table():
+    customer_data=[
+        (1,'Harry Potter','789-456-321'),
+        (2,'Hermione Granger','345-764-212'),
+        (3,'Draco Malfoy','234-634-735'),
+        (4,'Ron Weasley','123-444-666'),
+
+    ]
+    sql_insert="""
+        INSERT INTO Customer(CustomerID,FullName,Phone)
+        VALUES(%s,%s,%s)
+    """
+    cnx=set_up_connection()
+    try:
+        cursor=cnx.cursor()
+        sql_use_db = """
+            USE littlelemondb;
+        """
+        cursor.execute(sql_use_db)
+        cursor.executemany(sql_insert,customer_data)
+        cnx.commit()
+        cursor.close()
+        logging.info("Succesfully inserted data")
+    except connector.Error as e:
+        logging.error(f"Problem with insert data: {e}")
+    finally:
+        cnx.close()
+    
+          
+def insert_data_to_order_table():
+    data=[
+        (1,'2022-10-10',654.32,1,1,2,1),
+        (2,'2022-11-12',654.32,2,2,1,3),
+        (3,'2022-10-11',654.32,3,3,1,4),
+        (4,'2022-10-13',654.32,4,4,2,2),
+    ]
+    cnx=set_up_connection()
+    try:
+        cursor = cnx.cursor()
+        sql_use_db = """
+            USE littlelemondb;
+        """
+        cursor.execute(sql_use_db)
+        sql_insert="""
+            INSERT INTO `Order` (OrderID,OrderDate,TotalCost,OrderDeliveryID,CustomerID,StaffID,BookingID)
+            VALUES (%s,%s,%s,%s,%s,%s,%s)
+        """
+        cursor.executemany(sql_insert,data)
+        cnx.commit()
+        cursor.close()
+        logging.info("Succesfully inserted data")
+          
+    except connector.Error as e:
+        logging.error(f"Problem with insert data: {e}")
+
+    finally:
+        cnx.close()
+    
+    
+insert_data_to_order_table()
