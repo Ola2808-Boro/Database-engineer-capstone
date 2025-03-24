@@ -41,7 +41,8 @@ def create_virtual_table():
         logging.info("Succesfully created the virtual table")
     except connector.Error as e:
         logging.error(f"Problem with create the virtual table: {e}")
-    cnx.close()
+    finally:
+        cnx.close()
 
 
 def retrieve_general_info():
@@ -96,7 +97,8 @@ def retrieve_general_info():
     except connector.Error as e:
         logging.error(f"Problem with extracted general inforamtions: {e}")
 
-    cnx.close()
+    finally:
+        cnx.close()
 
 
 def retrieve_menu_info():
@@ -141,4 +143,89 @@ def retrieve_menu_info():
     except connector.Error as e:
         logging.error(f"Problem with extracted menu inforamtions: {e}")
 
-    cnx.close()
+    finally:
+        cnx.close()
+
+def max_quantity_stored_procedure():
+    cnx=set_up_connection()
+    try:
+        cursor = cnx.cursor()
+        sql_use_db = """
+            USE littlelemondb;
+        """
+        cursor.execute(sql_use_db)
+        sql_get_max_quantity="""
+            CREATE PROCEDURE IF NOT EXISTS GetMaxQuantity()
+            BEGIN
+                SELECT MAX(`Total Quantity in Order`) as `Max Quantity in Order`
+                FROM (
+                    Select SUM(Quantity) as `Total Quantity in Order`
+                    FROM OrderDetails 
+                    Group By Order_OrderID
+                ) as TotalQuantity;
+            END
+        """
+        cursor.execute(sql_get_max_quantity)
+        cursor.callproc('GetMaxQuantity')
+        results=next(cursor.stored_results())
+        dataset=results.fetchall()[0][0]
+        logging.info(f'Max quantity : {dataset}')
+        
+    except connector.Error as e:
+        logging.error(f"Problem with creating GetMaxQuantity stored procedure: {e}")
+
+    finally:
+        cnx.close()
+ 
+def cancel_order_stored_procedure():
+    cnx=set_up_connection()
+    try:
+        cursor = cnx.cursor()
+        sql_use_db = """
+            USE littlelemondb;
+        """
+        cursor.execute(sql_use_db)
+        sql_get_order_detail = """
+            CREATE PROCEDURE IF NOT EXISTS CancelOrder(IN orderID INT)
+            BEGIN
+                DELETE FROM `Order` WHERE OrderID=orderID;
+            END
+        """
+        cursor.execute(sql_get_order_detail)
+        cursor.callproc('CancelOrder',(5,))
+        logging.info("Succesfully deleted row")
+          
+    except connector.Error as e:
+        logging.error(f"Problem with creating Cancel Order stored procedure: {e}")
+
+    finally:
+        cnx.close()
+        
+def order_detail_parametrized_query():
+    cnx=set_up_connection()
+    try:
+        cursor = cnx.cursor()
+        sql_use_db = """
+            USE littlelemondb;
+        """
+        cursor.execute(sql_use_db)
+        sql_get_order_detail = """
+            SELECT OrderID, OrderDate, TotalCost 
+            FROM `Order`
+            WHERE OrderID = %s;
+        """
+        cursor.execute(sql_get_order_detail,(5,))
+        result = cursor.fetchall()
+        for row in result:
+            order_id,order_date,total_cost=row
+            logging.info(f"Order id: {order_id}")
+            logging.info(f"Order date: {order_date}")
+            logging.info(f"Total cost: {total_cost}")
+          
+    except connector.Error as e:
+        logging.error(f"Problem with creating GetOrderDetail parametrized query: {e}")
+
+    finally:
+        cnx.close()
+        
+cancel_order_stored_procedure()
