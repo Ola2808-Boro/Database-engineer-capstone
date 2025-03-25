@@ -3,20 +3,13 @@ import os
 
 import mysql.connector as connector
 from dotenv import load_dotenv
+from connection import set_up_connection
+from insert_data import insert_all_data
+
 
 load_dotenv()
 logging.basicConfig(filename="logs.log", format="%(asctime)s %(message)s", filemode="w")
 
-
-def set_up_connection() -> connector.MySQLConnection:
-    try:
-        cnx = connector.connect(
-            user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD")
-        )
-        logging.error("Succesfully set up the connection")
-    except connector.Error as e:
-        logging.error(f"Problem with set up the connection: {e}")
-    return cnx
 
 
 def create_virtual_table():
@@ -170,7 +163,7 @@ def max_quantity_stored_procedure():
         results=next(cursor.stored_results())
         dataset=results.fetchall()[0][0]
         logging.info(f'Max quantity : {dataset}')
-        
+        cursor.close()
     except connector.Error as e:
         logging.error(f"Problem with creating GetMaxQuantity stored procedure: {e}")
 
@@ -194,7 +187,7 @@ def cancel_order_stored_procedure():
         cursor.execute(sql_get_order_detail)
         cursor.callproc('CancelOrder',(5,))
         logging.info("Succesfully deleted row")
-          
+        cursor.close()
     except connector.Error as e:
         logging.error(f"Problem with creating Cancel Order stored procedure: {e}")
 
@@ -214,8 +207,9 @@ def order_detail_parametrized_query():
             FROM `Order`
             WHERE OrderID = %s;
         """
-        cursor.execute(sql_get_order_detail,(5,))
+        cursor.execute(sql_get_order_detail,(5))
         result = cursor.fetchall()
+        cursor.close()
         for row in result:
             order_id,order_date,total_cost=row
             logging.info(f"Order id: {order_id}")
@@ -227,5 +221,4 @@ def order_detail_parametrized_query():
 
     finally:
         cnx.close()
-        
-cancel_order_stored_procedure()
+      
