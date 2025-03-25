@@ -1,2 +1,8 @@
-2025-03-24 11:27:24,989 Succesfully set up the connection
-2025-03-24 11:27:24,995 Problem with insert data: 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`littlelemondb`.`order`, CONSTRAINT `fk_Order_OrderDelivery` FOREIGN KEY (`OrderDeliveryID`) REFERENCES `orderdelivery` (`OrderDeliveryID`))
+2025-03-25 10:11:57,304 Succesfully set up the connection
+2025-03-25 10:11:57,313 Succesfully set up the connection
+2025-03-25 10:11:57,321 Succesfully set up the connection
+2025-03-25 10:11:57,328 Succesfully set up the connection
+2025-03-25 10:11:57,330 Succesfully set up the connection
+2025-03-25 10:11:57,345 Succesfully set up the connection
+2025-03-25 10:11:57,345 Succesfully set up the connection
+2025-03-25 10:11:57,361 Succesfully set up the connection
